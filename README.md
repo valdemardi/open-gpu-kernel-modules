@@ -1,4 +1,101 @@
-# NVIDIA Linux Open GPU Kernel Module Source
+# NVIDIA Linux Open GPU Kernel Module Source with PCIe and NVLink P2P Patches
+
+## Fork Details
+
+This fork adds NVLink capability back to the [tinygrad/open-gpu-kernel-modules](https://github.com/tinygrad/open-gpu-kernel-modules)
+P2P enabling fork of the driver. The starting point for this fork is the [aikitoria/open-gpu-kernel-modules](https://github.com/aikitoria/open-gpu-kernel-modules)
+version, which brings the tinygrad fork into a functional state with the upstream version 595.45.04.
+
+This version of the driver requires setting the kernel argument `nvidia.NVreg_Bar1P2PMode=1`.
+
+If your system already works with the tinygrad or aikitoria fork and you have GPUs connected via both
+NVLink and PCIe, this version allows you to use NVLink for P2P communication between NVLink-connected
+GPUs and PCIe P2P for the rest. The most likely scenario for this setup is nodes with multiple RTX 3090s,
+where pairs of GPUs are connected via NVLink.
+
+The test node features four RTX 3090s, with NVLink connections from GPU0 to GPU2 and from GPU1 to GPU3.
+
+```
+$ nvidia-smi topo -m
+	GPU0	GPU1	GPU2	GPU3	CPU Affinity	NUMA Affinity	GPU NUMA ID
+GPU0	 X 	PHB	NV4	NODE	0-23	0		N/A
+GPU1	PHB	 X 	NODE	NV4	0-23	0		N/A
+GPU2	NV4	NODE	 X 	PHB	0-23	0		N/A
+GPU3	NODE	NV4	PHB	 X 	0-23	0		N/A
+
+Legend:
+
+  X    = Self
+  SYS  = Connection traversing PCIe as well as the SMP interconnect between NUMA nodes (e.g., QPI/UPI)
+  NODE = Connection traversing PCIe as well as the interconnect between PCIe Host Bridges within a NUMA node
+  PHB  = Connection traversing PCIe as well as a PCIe Host Bridge (typically the CPU)
+  PXB  = Connection traversing multiple PCIe bridges (without traversing the PCIe Host Bridge)
+  PIX  = Connection traversing at most a single PCIe bridge
+  NV#  = Connection traversing a bonded set of # NVLinks
+
+
+#
+# P2P read
+#
+
+$ nvidia-smi topo -p2p r
+ 	GPU0	GPU1	GPU2	GPU3	
+ GPU0	X	OK	OK	OK	
+ GPU1	OK	X	OK	OK	
+ GPU2	OK	OK	X	OK	
+ GPU3	OK	OK	OK	X	
+
+
+#
+# P2P Write
+#
+
+$ nvidia-smi topo -p2p w
+ 	GPU0	GPU1	GPU2	GPU3	
+ GPU0	X	OK	OK	OK	
+ GPU1	OK	X	OK	OK	
+ GPU2	OK	OK	X	OK	
+ GPU3	OK	OK	OK	X	
+
+
+#
+# NVLink
+#
+
+$ nvidia-smi topo -p2p n
+ 	GPU0	GPU1	GPU2	GPU3	
+ GPU0	X	NS	OK	NS	
+ GPU1	NS	X	NS	OK	
+ GPU2	OK	NS	X	NS	
+ GPU3	NS	OK	NS	X	
+
+
+#
+# PCIe
+#
+
+$ nvidia-smi topo -p2p p
+ 	GPU0	GPU1	GPU2	GPU3	
+ GPU0	X	OK	NS	OK	
+ GPU1	OK	X	OK	NS	
+ GPU2	NS	OK	X	OK	
+ GPU3	OK	NS	OK	X	
+
+Legend:
+
+  X    = Self
+  OK   = Status Ok
+  CNS  = Chipset not supported
+  GNS  = GPU not supported
+  TNS  = Topology not supported
+  NS   = Not supported
+  U    = Unknown
+
+```
+
+---
+
+## Upstream details
 
 This is the source release of the NVIDIA Linux open GPU kernel modules,
 version 595.45.04.
