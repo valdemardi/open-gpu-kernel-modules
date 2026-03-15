@@ -15,6 +15,7 @@ where pairs of GPUs are connected via NVLink.
 
 The test node features four RTX 3090s, with NVLink connections from GPU0 to GPU2 and from GPU1 to GPU3.
 
+### Outputs from nvidia-smi
 ```
 $ nvidia-smi topo -m
 	GPU0	GPU1	GPU2	GPU3	CPU Affinity	NUMA Affinity	GPU NUMA ID
@@ -91,11 +92,10 @@ Legend:
   NS   = Not supported
   U    = Unknown
 
+```
 
-#
-# [CUDA Samples(https://github.com/NVIDIA/cuda-samples) p2pBandwidthLatencyTest
-#
-
+### Output from [CUDA Samples](https://github.com/NVIDIA/cuda-samples) p2pBandwidthLatencyTest
+```
 $ ./p2pBandwidthLatencyTest
 [P2P (Peer-to-Peer) GPU Bandwidth Latency Test]
 Device: 0, NVIDIA GeForce RTX 3090, pciBusID: 1, pciDeviceID: 0, pciDomainID:0
@@ -174,6 +174,66 @@ P2P=Enabled Latency (P2P Writes) Matrix (us)
      3   2.61   2.72   2.70   2.98
 
 NOTE: The CUDA Samples are not meant for performance measurements. Results may vary when GPU Boost is enabled.
+```
+
+### Installed for testing on Arch with:
+```
+git clone https://aur.archlinux.org/nvidia-open-git.git
+
+cd nvidia-open-git
+
+git checkout 9b2528e3d3 # <- latest
+
+# Get patch to apply on top of NVIDIA/open-gpu-kernel-modules
+curl -o 150-nvidia-open-bar1-p2p.patch  https://github.com/NVIDIA/open-gpu-kernel-modules/compare/595.45.04...valdemardi:open-gpu-kernel-modules:bar1-p2p.patch
+
+# Add the patch to be applied
+vim PKGBUILD
+
+git diff
+diff --git a/PKGBUILD b/PKGBUILD
+index becae50..e5cdf97 100644
+--- a/PKGBUILD
++++ b/PKGBUILD
+@@ -18,18 +18,22 @@ source=('git+https://github.com/NVIDIA/open-gpu-kernel-modules.git'
+         '110-nvidia-open-change-dkms-conf.patch'
+         '120-nvidia-open-linux-rt-gift.patch'
+         '130-nvidia-open-reproducible-build.patch'
+-        '140-nvidia-open-gcc-sls.patch')
++        '140-nvidia-open-gcc-sls.patch'
++        '150-nvidia-open-bar1-p2p.patch')
++
+ sha256sums=('SKIP'
+             '009724e2e07b7be589ba455f225a9742d88a3a29383f2f220cb830ef4c8b7aea'
+             'b0f62a78f749ff3a104197c12b6d885352adcf35fb5ecf00c4cd4c51b4195e45'
+             '5340f33cdd19024a4501fee3d475af152c39f277d44422c65d447db263a0d501'
+-            'b498128faffe3b7ccdf210b5cdbb8da75b8e3a381d2c9b82355c344405e4e916')
++            'b498128faffe3b7ccdf210b5cdbb8da75b8e3a381d2c9b82355c344405e4e916'
++            'e5abff156b092c464d191ec42bee0157dc43635ebd042a47e22477fe70bda31b')
+
+ prepare() {
+     patch -d open-gpu-kernel-modules -Np1 -i "${srcdir}/110-nvidia-open-change-dkms-conf.patch"
+     patch -d open-gpu-kernel-modules -Np1 -i "${srcdir}/120-nvidia-open-linux-rt-gift.patch"
+     patch -d open-gpu-kernel-modules -Np1 -i "${srcdir}/130-nvidia-open-reproducible-build.patch"
+     patch -d open-gpu-kernel-modules -Np1 -i "${srcdir}/140-nvidia-open-gcc-sls.patch"
++    patch -d open-gpu-kernel-modules -Np1 -i "${srcdir}/150-nvidia-open-bar1-p2p.patch"
+
+     sed -i "s/__VERSION_STRING/${pkgver%%.r*}/" open-gpu-kernel-modules/kernel-open/dkms.conf
+
+makepkg
+
+sudo pacman -U nvidia-open-dkms-git-595.45.04.r0.gdf1c9a3de-1-x86_64.pkg.tar.zst
+
+# Add kernel args amd_iommu=on iommu=pt and nvidia.NVreg_Bar1P2PMode=1
+sudo vim /etc/default/grub
+
+grep GRUB_CMDLINE_LINUX= /etc/default/grub
+GRUB_CMDLINE_LINUX="amd_iommu=on iommu=pt nvidia.NVreg_Bar1P2PMode=1"
+
+# Make the kernel args effective
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+
+sudo reboot
 ```
 
 ---
@@ -373,6 +433,7 @@ Package for more details.
 In the below table, if three IDs are listed, the first is the PCI Device 
 ID, the second is the PCI Subsystem Vendor ID, and the third is the PCI
 Subsystem Device ID.
+
 
 | Product Name                                            | PCI ID         |
 | ------------------------------------------------------- | -------------- |
