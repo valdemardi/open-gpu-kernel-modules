@@ -18,11 +18,11 @@ The test node features four RTX 3090s, with NVLink connections from GPU0 to GPU2
 ### Outputs from nvidia-smi
 ```
 $ nvidia-smi topo -m
-	GPU0	GPU1	GPU2	GPU3	CPU Affinity	NUMA Affinity	GPU NUMA ID
-GPU0	 X 	PHB	NV4	NODE	0-23	0		N/A
-GPU1	PHB	 X 	NODE	NV4	0-23	0		N/A
-GPU2	NV4	NODE	 X 	PHB	0-23	0		N/A
-GPU3	NODE	NV4	PHB	 X 	0-23	0		N/A
+        GPU0    GPU1    GPU2    GPU3    CPU Affinity    NUMA Affinity    GPU NUMA ID
+GPU0    X       PHB     NV4     NODE    0-23    0               N/A
+GPU1    PHB     X       NODE    NV4     0-23    0               N/A
+GPU2    NV4     NODE    X       PHB     0-23    0               N/A
+GPU3    NODE    NV4     PHB     X       0-23    0               N/A
 
 Legend:
 
@@ -40,11 +40,11 @@ Legend:
 #
 
 $ nvidia-smi topo -p2p r
- 	GPU0	GPU1	GPU2	GPU3	
- GPU0	X	OK	OK	OK	
- GPU1	OK	X	OK	OK	
- GPU2	OK	OK	X	OK	
- GPU3	OK	OK	OK	X	
+        GPU0    GPU1    GPU2    GPU3
+ GPU0   X       OK      OK      OK
+ GPU1   OK      X       OK      OK
+ GPU2   OK      OK      X       OK
+ GPU3   OK      OK      OK      X
 
 
 #
@@ -52,11 +52,11 @@ $ nvidia-smi topo -p2p r
 #
 
 $ nvidia-smi topo -p2p w
- 	GPU0	GPU1	GPU2	GPU3	
- GPU0	X	OK	OK	OK	
- GPU1	OK	X	OK	OK	
- GPU2	OK	OK	X	OK	
- GPU3	OK	OK	OK	X	
+        GPU0    GPU1    GPU2    GPU3
+ GPU0   X       OK      OK      OK
+ GPU1   OK      X       OK      OK
+ GPU2   OK      OK      X       OK
+ GPU3   OK      OK      OK      X
 
 
 #
@@ -64,11 +64,11 @@ $ nvidia-smi topo -p2p w
 #
 
 $ nvidia-smi topo -p2p n
- 	GPU0	GPU1	GPU2	GPU3	
- GPU0	X	NS	OK	NS	
- GPU1	NS	X	NS	OK	
- GPU2	OK	NS	X	NS	
- GPU3	NS	OK	NS	X	
+        GPU0    GPU1    GPU2    GPU3
+ GPU0   X       NS      OK      NS
+ GPU1   NS      X       NS      OK
+ GPU2   OK      NS      X       NS
+ GPU3   NS      OK      NS      X
 
 
 #
@@ -76,11 +76,11 @@ $ nvidia-smi topo -p2p n
 #
 
 $ nvidia-smi topo -p2p p
- 	GPU0	GPU1	GPU2	GPU3	
- GPU0	X	OK	NS	OK	
- GPU1	OK	X	OK	NS	
- GPU2	NS	OK	X	OK	
- GPU3	OK	NS	OK	X	
+        GPU0    GPU1    GPU2    GPU3
+ GPU0   X       OK      NS      OK
+ GPU1   OK      X       OK      NS
+ GPU2   NS      OK      X       OK
+ GPU3   OK      NS      OK      X
 
 Legend:
 
